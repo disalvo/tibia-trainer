@@ -7,11 +7,12 @@ ultimoMovimento="Down"
 dt=`date "+%d/%m/%Y %T"` 
 echo "[$dt] Iniciando treinamento"
 
-while getopts comida:magia OPCAO; do
-	case "${OPCAO}" in
-    	a) comida="${OPTARG}" ;;
-    	b) magia="${OPTARG}" ;;
-	esac
+while getopts ":c:m:" opt
+   do
+     case $opt in
+        c) comida=$OPTARG;;
+        m) magia=$OPTARG;;
+     esac
 done
 
 function getMovimento {
@@ -46,8 +47,8 @@ function movimento () {
 
 		echo "[$dt] Movimento executado: $mov"
 
-	    segundosRandom=$(shuf -i 450-800 -n 1)
-		sleep $segundosRandom
+	    #segundosRandom=$(shuf -i 450-800 -n 1)
+		#sleep $segundosRandom
 	done
 }
 
@@ -84,8 +85,11 @@ do
     # segundo randômico
     #SEGUNDORANDOMICO=$(shuf -i 450-800 -n 1)
 	movimento
-
-	[${comida}] comer $comida
+	
+	if [-n $comida]; then 
+		echo "[$dt] Comida enviada: $comida"
+		comer $comida
+	fi
 
 	[${magia}] magia $magia
 
