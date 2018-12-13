@@ -1,19 +1,31 @@
 #!/bin/bash
 
-# seed randômico
 RANDOM=$$$(date +%s)
 
-# array de movimentos
-MOVIMENTOS=("Up" "Down" "Right" "Left" "Up+Down" "Down+Up" "Up+Left" "Down+Left")
+ultimoMovimento="Down"
 
-function executa {
+dt=`date "+%d/%m/%Y %T"` 
+echo "[$dt] Iniciando treinamento"
+
+while getopts comida:magia OPCAO; do
+	case "${OPCAO}" in
+    	a) comida="${OPTARG}" ;;
+    	b) magia="${OPTARG}" ;;
+	esac
+done
+
+function getMovimento {
+	local movimentos=("Up" "Down" "Right" "Left" "Up+Down" "Up+Left" "Up+Right")
+	echo ${movimentos[$RANDOM % ${#movimentos[@]}]}
+}
+
+function executa () {
     if WIDS=$(xdotool search --name 'Tibia'); then
         for WID in $WIDS
 	    do
 	        if $(xwininfo -id $WID | grep -q IsViewable) 
 		    then
-			xdotool windowactivate ${WID} key --window ${WID} "Control_L+$MOV"
-			#xdotool key --window ${WID} Control_L+$MOV
+			xdotool windowactivate ${WID} key --window ${WID} "$1"
 			xdotool windowminimize ${WID}
 		    break
 		fi
@@ -23,17 +35,67 @@ function executa {
     fi
 }
 
+function movimento () {
+	while true 
+	do
+		local dt=`date "+%d/%m/%Y %T"` 
+		mov=$(getMovimento)
+		executa "Control_L+$mov"
+
+		sqlite3 tibia-trainer.db  "insert into log (tipo, comando) values ('movimento','$mov');"
+
+		echo "[$dt] Movimento executado: $mov"
+
+	    segundosRandom=$(shuf -i 450-800 -n 1)
+		sleep $segundosRandom
+	done
+}
+
+function comer () {
+	while true 
+	do
+		local dt=`date "+%d/%m/%Y %T"` 
+
+		sqlite3 tibia-trainer.db  "insert into log (tipo, comando) values ('comida','$1');"
+
+		echo "[$dt] Comida executada: $1"
+
+	    segundosRandom=$(shuf -i 10-60 -n 1)
+		sleep $segundosRandom
+	done
+}
+
+function magia () {
+	while true 
+	do
+		local dt=`date "+%d/%m/%Y %T"` 
+
+		sqlite3 tibia-trainer.db  "insert into log (tipo, comando) values ('magia','$1');"
+
+		echo "[$dt] Magia executada: $1"
+
+	    segundosRandom=$(shuf -i 10-60 -n 1)
+		sleep $segundosRandom
+	done
+}
+
 while true
 do
     # segundo randômico
-    SEGUNDORANDOMICO=$(shuf -i 450-800 -n 1)
+    #SEGUNDORANDOMICO=$(shuf -i 450-800 -n 1)
+	movimento
+
+	[${comida}] comer $comida
+
+	[${magia}] magia $magia
 
     # movimento randômico
-    MOV=${MOVIMENTOS[$RANDOM % ${#MOVIMENTOS[@]}]}
+    #movimentoAtual=$(getMovimento)
 
-    dt=`date "+%d/%m/%Y %T"` 
+    #echo "[$dt] Movimento: $movimentoAtual | Ultimo: $ultimoMovimento | Segundos: $SEGUNDORANDOMICO"
+    #executa
+	#sleep 1
+    #sleep $SEGUNDORANDOMICO
 
-    echo "[$dt] Movimento: $MOV | Segundos: $SEGUNDORANDOMICO"
-    executa
-    sleep $SEGUNDORANDOMICO
+	#ultimoMovimento=$movimentoAtual
 done
