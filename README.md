@@ -13,4 +13,4 @@ $> sudo apt install xdotool sqlite3
 
 ## How to use
 
-./tibia-giro.sh
+./tibia-trainer.sh
